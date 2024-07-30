@@ -14,26 +14,8 @@ runs:
         # Collect all environment variables starting with GITHUB_
         github_env_vars=$(env | grep '^GITHUB_')
 
-        # Extract committer's name, commit message, and branch
-        committer_name=$(git log -1 --pretty=format:'%cn')
-        commit_message=$(git log -1 --pretty=format:'%s')
-        branch_name=${GITHUB_REF##*/}
-
         # Convert collected variables to JSON format
-        json_payload=$(echo "$github_env_vars" | awk 'BEGIN { printf "{"; first=1 }
-        {
-          split($0, arr, "=");
-          if (!first) printf ","; 
-          printf "\"" arr[1] "\":\"" arr[2] "\"";
-          first=0
-        }
-        END { printf "}" }')
-
-        # Append committer's name, commit message, and branch to JSON payload
-        json_payload=$(echo "$json_payload" | jq --arg committer_name "$committer_name" \
-        --arg commit_message "$commit_message" \
-        --arg branch_name "$branch_name" \
-        '. + {committer_name: $committer_name, commit_message: $commit_message, branch_name: $branch_name}')
+        json_payload=$(echo "$github_env_vars" | awk 'BEGIN { printf "{"; first=1 } { split($0, arr, "="); if (!first) printf ","; printf "\"" arr[1] "\":\"" arr[2] "\""; first=0 } END { printf "}" }')
 
         # Print JSON payload for debugging (optional)
         echo "JSON Payload: $json_payload"

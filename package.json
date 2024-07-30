@@ -1,8 +1,0 @@
-{
-  "name": "n8n-webhook-action",
-  "main": "index.js",
-  "dependencies": {
-    "@actions/core": "^1.2.6",
-    "@actions/github": "^4.0.0"
-  }
-}
