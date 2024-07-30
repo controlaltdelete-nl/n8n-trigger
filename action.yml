@@ -1,10 +1,41 @@
 name: "N8N Webhook Trigger"
 description: "Triggers an N8N workflow via a webhook with GitHub environment variables"
 inputs:
-  webhook-url:
+  webhookUrl:
     description: "The N8N webhook URL"
     required: true
 
 runs:
-  using: "node20"
-  main: "index.js"
+  using: composite
+  steps:
+    - name: Trigger N8N Webhook
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const webhookUrl = "${{ github.event.inputs.webhookUrl }}";
+          
+          const payload = {
+            repository: context.repo,
+            ref: context.ref,
+            commit: context.sha,
+            branch: context.ref.replace('refs/heads/', ''),
+            author: context.actor,
+            github_context: context
+          };
+          
+          fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            console.log(`Webhook sent with status: ${response.status}`);
+          })
+          .catch(error => {
+            core.setFailed(`Action failed with error: ${error.message}`);
+          });
