@@ -17,5 +17,5 @@ jobs:
 
 Set your N8N webhook to `POST`:
 
-![N8N Settings](images/n8n-webhook.png)
+![N8N Settings](images/n8n-settings.png)
 
