@@ -1,0 +1,10 @@
+name: "N8N Webhook Trigger"
+description: "Triggers an N8N workflow via a webhook with GitHub environment variables"
+inputs:
+  webhook-url:
+    description: "The N8N webhook URL"
+    required: true
+
+runs:
+  using: "node20"
+  main: "index.js"
