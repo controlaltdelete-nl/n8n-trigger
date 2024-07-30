@@ -8,34 +8,17 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Trigger N8N Webhook
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const webhookUrl = "${{ github.event.inputs['webhook-url'] }}";
-          
-          const payload = {
-            repository: context.repo,
-            ref: context.ref,
-            commit: context.sha,
-            branch: context.ref.replace('refs/heads/', ''),
-            author: context.actor,
-            github_context: context
-          };
-          
-          fetch(webhookUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            console.log(`Webhook sent with status: ${response.status}`);
-          })
-          .catch(error => {
-            core.setFailed(`Action failed with error: ${error.message}`);
-          });
+    - name: Inform N8N
+      shell: bash
+      run: |
+        # Collect all environment variables starting with GITHUB_
+        github_env_vars=$(env | grep '^GITHUB_')
+
+        # Convert collected variables to JSON format
+        json_payload=$(echo "$github_env_vars" | awk 'BEGIN { printf "{"; first=1 } { split($0, arr, "="); if (!first) printf ","; printf "\"" arr[1] "\":\"" arr[2] "\""; first=0 } END { printf "}" }')
+
+        # Print JSON payload for debugging (optional)
+        echo "JSON Payload: $json_payload"
+
+        # Send the JSON payload via a POST request using curl
+        curl -X POST -H "Content-Type: application/json" -d "$json_payload" ${{ inputs.webhook-url }}
